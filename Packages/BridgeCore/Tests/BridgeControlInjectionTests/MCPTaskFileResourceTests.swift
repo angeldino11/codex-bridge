@@ -127,7 +127,7 @@ extension ControlInjectionTests {
     )
     let textJSON = String(decoding: try JSONEncoder().encode(textContent), as: UTF8.self)
     XCTAssertTrue(textJSON.contains("hello"))
-    XCTAssertTrue(textJSON.contains("text/plain"))
+    XCTAssertEqual(textContent.mimeType, "text/plain; charset=utf-8")
 
     let bytes = Data([0x00, 0xFF, 0x10])
     let binaryContent = MCPTaskFileResourceSupport.content(
@@ -137,7 +137,7 @@ extension ControlInjectionTests {
     )
     let binaryJSON = String(decoding: try JSONEncoder().encode(binaryContent), as: UTF8.self)
     XCTAssertTrue(binaryJSON.contains(bytes.base64EncodedString()))
-    XCTAssertTrue(binaryJSON.contains("application/octet-stream"))
+    XCTAssertEqual(binaryContent.mimeType, "application/octet-stream")
   }
 
   private func taskFileResourceSnapshot(
