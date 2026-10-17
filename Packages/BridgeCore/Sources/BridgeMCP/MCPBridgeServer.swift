@@ -75,7 +75,8 @@ public actor MCPBridgeServer {
     exposureMode: @escaping @Sendable (MCPClientID) async -> MCPServiceExposureMode,
     httpConfiguration: MCPHTTPConfiguration,
     sessionLimits: MCPSessionRegistry.Limits = .init(),
-    clientAdmission: MCPClientAdmissionGate? = nil
+    clientAdmission: MCPClientAdmissionGate? = nil,
+    currentControl: (@Sendable () async throws -> String?)? = nil
   ) {
     precondition(!appVersion.isEmpty)
     makeServer = { clientID in
@@ -84,7 +85,8 @@ public actor MCPBridgeServer {
         appVersion: appVersion,
         service: service,
         exposureMode: mode,
-        clientID: clientID
+        clientID: clientID,
+        currentControl: clientID == .chatGPT ? currentControl : nil
       ).makeServer()
     }
     discoveryInstructions = { clientID in

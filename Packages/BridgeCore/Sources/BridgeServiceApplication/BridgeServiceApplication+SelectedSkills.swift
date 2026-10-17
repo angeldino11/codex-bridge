@@ -11,9 +11,10 @@ extension BridgeServiceApplication {
     for submission: MCPServiceTaskSubmission,
     project: ServiceProjectRecord,
     deadline: ContinuousClock.Instant,
-    previousTask: ServiceTaskRecord? = nil
+    previousTask: ServiceTaskRecord? = nil,
+    snapshotCodexSkills: Bool = false
   ) async throws -> [AgentSelectedSkill] {
-    guard submission.providerID == "pi" || submission.providerID == "qoder" else { return [] }
+    guard snapshotCodexSkills || submission.providerID == "pi" || submission.providerID == "qoder" else { return [] }
     let hasSelection = submission.skillName != nil || submission.skillNames != nil
     if !hasSelection, let previousTask { return previousTask.selectedSkills }
     let names = Array(

@@ -177,11 +177,49 @@ public struct MCPServiceTaskMutationReceipt: Codable, Equatable, Sendable {
   public let taskID: String
   public let status: String
   public let accepted: Bool
+  package let taskProviderID: String?
+  package let taskSourceClientID: String?
 
   public init(taskID: String, status: String, accepted: Bool) {
     self.taskID = taskID
     self.status = status
     self.accepted = accepted
+    taskProviderID = nil
+    taskSourceClientID = nil
+  }
+
+  package init(
+    taskID: String,
+    status: String,
+    accepted: Bool,
+    taskProviderID: String?,
+    taskSourceClientID: String?
+  ) {
+    self.taskID = taskID
+    self.status = status
+    self.accepted = accepted
+    self.taskProviderID = taskProviderID
+    self.taskSourceClientID = taskSourceClientID
+  }
+
+  public init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    self.init(
+      taskID: try values.decode(String.self, forKey: .taskID),
+      status: try values.decode(String.self, forKey: .status),
+      accepted: try values.decode(Bool.self, forKey: .accepted)
+    )
+  }
+
+  public func encode(to encoder: Encoder) throws {
+    var values = encoder.container(keyedBy: CodingKeys.self)
+    try values.encode(taskID, forKey: .taskID)
+    try values.encode(status, forKey: .status)
+    try values.encode(accepted, forKey: .accepted)
+  }
+
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.taskID == rhs.taskID && lhs.status == rhs.status && lhs.accepted == rhs.accepted
   }
 
   private enum CodingKeys: String, CodingKey {

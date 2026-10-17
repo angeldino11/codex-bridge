@@ -26,6 +26,7 @@
     var preferenceQueue = CodexPreferencesSaveQueue()
     var modelCatalogGeneration: UInt64 = 0
     private(set) var instructions = ""
+    var controlInjectionStatus = "ERROR"
     private(set) var directMode = "require"
     private(set) var taskStartMode = "require"
     var isRefreshingModels = false
@@ -134,6 +135,12 @@
         failures.append("Direct 审批")
       }
       do {
+        controlInjectionStatus = try await client.controlInjectionStatus().status
+      } catch {
+        controlInjectionStatus = "ERROR"
+        failures.append("Control Injection")
+      }
+      do {
         taskStartMode = try await client.taskStartApprovalMode()
       } catch {
         failures.append("任务启动审批")
@@ -178,6 +185,20 @@
 
     func setDirectApprovalMode(_ mode: String) async {
       await setApprovalMode(mode, direct: true)
+    }
+
+    func setControlInjectionEnabled(_ enabled: Bool) async {
+      guard connectionState == .connected, !busy else { return }
+      busy = true
+      publishDisplay()
+      defer { busy = false; publishDisplay() }
+      do {
+        try await client.setControlInjectionEnabled(enabled)
+        controlInjectionStatus = try await client.controlInjectionStatus().status
+      } catch {
+        controlInjectionStatus = "ERROR"
+        statusText = "Control Injection 设置失败：\(BridgeServiceErrorMessage.message(error))"
+      }
     }
 
     func setTaskStartApprovalMode(_ mode: String) async {
@@ -249,6 +270,7 @@
         taskStartApprovalValues: Self.approvalValues,
         selectedTaskStartApprovalIndex: taskIndex,
         customInstructions: instructions,
+        controlInjectionStatus: controlInjectionStatus,
         savePreferencesEnabled: connectionState == .connected && !busy && current != nil,
         saveInstructionsEnabled: connectionState == .connected && !busy,
         saveDirectApprovalEnabled: connectionState == .connected && !busy,

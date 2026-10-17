@@ -30,6 +30,8 @@
         taskStartApprovalMode: settings.taskStartApprovalMode,
         taskStartApprovalOptions: settings.taskStartApprovalValues.map { approvalChoice($0) },
         customInstructions: settings.customInstructions,
+        controlInjectionStatus: settings.controlInjectionStatus,
+        canChangeControlInjection: settings.connectionState == .connected && !settings.busy,
         agentDefaults: agentDefaults?.defaultItems ?? [],
         nativePermissionPolicy: agentDefaults?.nativePermissionPolicy,
         keepServiceRunningAfterExit: settings.keepServiceRunningAfterExit,

@@ -1,0 +1,1 @@
+public struct ControlConfigUnavailable: Error, Equatable, Sendable { public init() {} }

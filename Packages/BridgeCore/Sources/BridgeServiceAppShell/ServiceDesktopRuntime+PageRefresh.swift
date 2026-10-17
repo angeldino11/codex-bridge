@@ -107,11 +107,14 @@ extension BridgeServiceAppModel {
     async let configurationResult = try? await client.directConfiguration()
     async let approvalModeResult = try? await client.directApprovalMode()
     async let taskStartModeResult = try? await client.taskStartApprovalMode()
+    async let controlStatusResult = try? await client.controlInjectionStatus()
     async let instructionsResult = try? await client.customInstructions()
     async let modelsResult: Void = refreshSettingsModels(client: client)
     if let value = await configurationResult { directConfiguration = value }
     if let value = await approvalModeResult { directApprovalMode = value }
     if let value = await taskStartModeResult { taskStartApprovalMode = value }
+    if let value = await controlStatusResult { controlInjectionStatus = value.status }
+    else { controlInjectionStatus = "ERROR" }
     if let value = await instructionsResult { customInstructions = value }
     await modelsResult
     if let installationID = focusedAgentNativePermissionInstallationID {

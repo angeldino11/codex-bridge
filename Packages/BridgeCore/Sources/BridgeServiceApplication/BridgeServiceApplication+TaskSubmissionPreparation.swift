@@ -54,12 +54,16 @@ extension BridgeServiceApplication {
     let selectedSkills = try await selectedSkillSnapshots(
       for: submission,
       project: project,
-      deadline: deadline
+      deadline: deadline,
+      snapshotCodexSkills: source == .mcpClient
+        && sourceClientID == MCPClientID.chatGPT.rawValue
     )
     let taskPrompt = try await taskPrompt(
       for: submission,
       projectID: project.id.rawValue,
-      deadline: deadline
+      deadline: deadline,
+      selectedSkills: source == .mcpClient
+        && sourceClientID == MCPClientID.chatGPT.rawValue ? selectedSkills : nil
     )
     return PreparedTaskSubmission(
       projectID: project.id,
@@ -101,7 +105,8 @@ extension BridgeServiceApplication {
   func taskPrompt(
     for submission: MCPServiceTaskSubmission,
     projectID: String,
-    deadline: ContinuousClock.Instant
+    deadline: ContinuousClock.Instant,
+    selectedSkills: [AgentSelectedSkill]? = nil
   ) async throws -> String {
     var prompt = Self.prompt(
       submission.prompt,
@@ -112,11 +117,23 @@ extension BridgeServiceApplication {
       var seen = Set<String>()
       for skillName in names where seen.insert(skillName).inserted {
         try Self.checkDeadline(deadline)
-        let skill = try await serviceReadSkill(
-          skillName: skillName, projectID: projectID, subpath: "SKILL.md",
-          deadline: deadline)
-        let instructions = String(skill.content.prefix(8 * 1_024))
-        prompt = "Skill instructions for \(skill.name):\n\n\(instructions)\n\nUser task:\n\(prompt)"
+        let skillNameForPrompt: String
+        let skillContent: String
+        if let selectedSkills {
+          guard let skill = selectedSkills.first(where: { $0.name == skillName }),
+            let content = skill.files.first(where: { $0.relativePath == "SKILL.md" })?.content
+          else { throw BridgeMCPQueryError.skillNotFound }
+          skillNameForPrompt = skill.name
+          skillContent = content
+        } else {
+          let skill = try await serviceReadSkill(
+            skillName: skillName, projectID: projectID, subpath: "SKILL.md",
+            deadline: deadline)
+          skillNameForPrompt = skill.name
+          skillContent = skill.content
+        }
+        let instructions = String(skillContent.prefix(8 * 1_024))
+        prompt = "Skill instructions for \(skillNameForPrompt):\n\n\(instructions)\n\nUser task:\n\(prompt)"
       }
     }
     guard prompt.utf8.count <= 32 * 1_024 else {

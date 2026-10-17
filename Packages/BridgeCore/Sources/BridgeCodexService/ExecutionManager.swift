@@ -1,12 +1,15 @@
 import BridgeDomain
+import BridgeServiceCore
 import Foundation
 
 public actor ExecutionManager {
   private let configuration: ExecutionManagerConfiguration
+  private let controlInjector: ControlInjector?
   private var sessions: [TaskID: ExecutionSession] = [:]
 
-  public init(configuration: ExecutionManagerConfiguration) {
+  public init(configuration: ExecutionManagerConfiguration, controlInjector: ControlInjector? = nil) {
     self.configuration = configuration
+    self.controlInjector = controlInjector
   }
 
   public func start(_ request: ExecutionRequest) async throws -> ExecutionHandle {
@@ -23,6 +26,7 @@ public actor ExecutionManager {
       configuration: configuration,
       projectRoot: request.project.root.canonicalPath,
       approvalLimits: ExecutionApprovalLimits(request: request),
+      controlInjector: controlInjector,
       onTermination: { [weak self] taskID, session in
         await self?.remove(taskID: taskID, matching: session)
       }

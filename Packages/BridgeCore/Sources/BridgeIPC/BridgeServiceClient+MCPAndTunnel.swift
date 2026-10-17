@@ -98,6 +98,20 @@ extension BridgeServiceClient {
     )
   }
 
+  public func controlInjectionStatus() async throws -> IPCControlInjectionStatus {
+    try await call(
+      operation: .getControlInjectionStatus,
+      payload: Optional<IPCMutationResponse>.none
+    )
+  }
+
+  public func setControlInjectionEnabled(_ enabled: Bool) async throws {
+    let _: IPCMutationResponse = try await call(
+      operation: .setControlInjectionEnabled,
+      payload: IPCControlInjectionSetting(enabled: enabled)
+    )
+  }
+
   public func taskStartApprovalMode() async throws -> String {
     let response: IPCTaskStartApprovalModeResponse = try await call(
       operation: .getTaskStartApprovalMode,

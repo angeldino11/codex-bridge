@@ -38,6 +38,8 @@ extension BridgeDesktopUIStateBuilder {
         titles: ["require": "每次需要批准", "auto": "自动批准"]
       ),
       customInstructions: model.customInstructions ?? "",
+      controlInjectionStatus: model.controlInjectionStatus,
+      canChangeControlInjection: model.connectionState == .connected,
       agentDefaults: agentDefaults(from: model),
       nativePermissionPolicy: nativePermissionPolicy(from: model),
       keepServiceRunningAfterExit: model.keepServiceRunningAfterAppExit,

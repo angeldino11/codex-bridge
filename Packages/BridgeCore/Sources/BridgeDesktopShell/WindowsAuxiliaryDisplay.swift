@@ -116,6 +116,7 @@
     let taskStartApprovalValues: [String]
     let selectedTaskStartApprovalIndex: Int?
     let customInstructions: String
+    var controlInjectionStatus: String = "ERROR"
     let savePreferencesEnabled: Bool
     let saveInstructionsEnabled: Bool
     let saveDirectApprovalEnabled: Bool

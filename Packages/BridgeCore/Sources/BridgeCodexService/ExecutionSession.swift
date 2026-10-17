@@ -27,6 +27,8 @@ package actor ExecutionSession {
   let configuration: ExecutionManagerConfiguration
   let projectRoot: String
   let approvalLimits: ExecutionApprovalLimits
+  let controlInjector: ControlInjector?
+  var controlApplies = false
   let onTermination: @Sendable (TaskID, ExecutionSession) async -> Void
   let continuation: AsyncStream<ExecutionEvent>.Continuation
 
@@ -52,6 +54,7 @@ package actor ExecutionSession {
     configuration: ExecutionManagerConfiguration,
     projectRoot: String,
     approvalLimits: ExecutionApprovalLimits,
+    controlInjector: ControlInjector?,
     onTermination: @escaping @Sendable (TaskID, ExecutionSession) async -> Void
   ) {
     let pair = AsyncStream.makeStream(
@@ -62,6 +65,7 @@ package actor ExecutionSession {
     self.configuration = configuration
     self.projectRoot = projectRoot
     self.approvalLimits = approvalLimits
+    self.controlInjector = controlInjector
     self.onTermination = onTermination
     client = CodexAppServerClient(
       configuration: configuration.appServer.current(),
@@ -82,6 +86,8 @@ package actor ExecutionSession {
       throw ExecutionServiceError.projectIdentityChanged(request.project.id)
     }
 
+    controlApplies = request.task.source == .mcpClient
+      && request.task.sourceClientID == "openai.chatgpt"
     beginConsumingEvents()
     do {
       try await client.start()
@@ -103,10 +109,19 @@ package actor ExecutionSession {
       )
       let threadID = try await prepareThread(request, posture: posture)
       expectedThreadID = threadID
+      var providerPrompt = request.task.prompt
+      if controlApplies, let control = try await controlInjector?.currentControl() {
+        providerPrompt = try ControlInjector.taskMessage(
+          request.task.prompt, skills: request.task.selectedSkills, control: control
+        )
+        guard providerPrompt.utf8.count <= 32 * 1_024 else {
+          throw ExecutionServiceError.invalidRequest("task.prompt")
+        }
+      }
       let turn = try await client.startTurn(
         TurnStartParams(
           threadId: threadID,
-          text: request.task.prompt,
+          text: providerPrompt,
           sandboxPolicy: posture.sandboxPolicy,
           approvalPolicy: posture.approvalPolicy,
           approvalsReviewer: posture.approvalsReviewer,
@@ -121,6 +136,9 @@ package actor ExecutionSession {
       let binding = try ExecutionBinding(threadID: threadID, turnID: turn.turn.id)
       try await activate(binding)
       return binding
+    } catch let error as ControlConfigUnavailable {
+      await shutdown()
+      throw error
     } catch let error as ExecutionServiceError {
       await shutdown()
       throw error
@@ -143,8 +161,12 @@ package actor ExecutionSession {
 
   func steer(expectedTurnID: String, text: String) async throws {
     let binding = try activeBinding(expectedTurnID: expectedTurnID)
-    let prompt = text.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !prompt.isEmpty, prompt.utf8.count <= 64 * 1_024, !prompt.contains("\0") else {
+    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    var prompt = trimmed
+    if controlApplies, let control = try await controlInjector?.currentControl() {
+      prompt = ControlInjector.wrap(text, control: control)
+    }
+    guard !trimmed.isEmpty, prompt.utf8.count <= 64 * 1_024, !prompt.contains("\0") else {
       throw ExecutionServiceError.invalidRequest("steer.text")
     }
     do {

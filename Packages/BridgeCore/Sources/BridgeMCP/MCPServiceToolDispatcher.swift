@@ -1,3 +1,4 @@
+import BridgeDomain
 import BridgeFiles
 import BridgeSecurity
 import Foundation
@@ -40,6 +41,7 @@ public struct MCPServiceToolDispatcher: Sendable {
   let exposureMode: MCPServiceExposureMode
   let clientID: MCPClientID
   let resultEncoder: MCPToolResultEncoder
+  let currentControl: (@Sendable () async throws -> String?)?
   let admission: MCPToolAdmission
   let deadlines: MCPServiceToolDeadlines
   let logger: Logger
@@ -50,6 +52,7 @@ public struct MCPServiceToolDispatcher: Sendable {
     exposureMode: MCPServiceExposureMode,
     clientID: MCPClientID = .chatGPT,
     resultEncoder: MCPToolResultEncoder = .init(),
+    currentControl: (@Sendable () async throws -> String?)? = nil,
     admission: MCPToolAdmission = .init(),
     deadlines: MCPServiceToolDeadlines = .production,
     logger: Logger = Logger(label: "CodexBridge.BridgeMCP.ServiceTools")
@@ -58,6 +61,7 @@ public struct MCPServiceToolDispatcher: Sendable {
     self.exposureMode = exposureMode
     self.clientID = clientID
     self.resultEncoder = resultEncoder
+    self.currentControl = currentControl
     self.admission = admission
     self.deadlines = deadlines
     self.logger = logger
@@ -91,6 +95,15 @@ public struct MCPServiceToolDispatcher: Sendable {
         contract,
         arguments: parameters.arguments,
         sessionID: key
+      )
+    } catch is ControlConfigUnavailable {
+      return try resultEncoder.encode(
+        MCPToolErrorOutput(error: .init(
+          code: "CONTROL_CONFIG_UNAVAILABLE",
+          category: .capabilityUnavailable,
+          message: "CONTROL_CONFIG_UNAVAILABLE",
+          retryable: false, nextAction: "restore_control_config"
+        )), isError: true
       )
     } catch let error as BridgeMCPQueryError {
       return try encodeQueryError(error)
