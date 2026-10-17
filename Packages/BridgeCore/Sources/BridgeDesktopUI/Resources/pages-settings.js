@@ -84,12 +84,12 @@
   function controlCard(page, emit) {
     var context = { emit: emit };
     var card = S.node("section", "settings-subsection");
-    card.appendChild(S.node("h3", null, "Control Injection"));
+    card.appendChild(S.node("h3", null, "控制注入"));
     var row = S.node("div", "check-field");
     var toggle = S.node("button", "switch-toggle");
     toggle.type = "button";
     toggle.setAttribute("role", "switch");
-    toggle.setAttribute("aria-label", "Control Injection");
+    toggle.setAttribute("aria-label", "控制注入");
     var thumb = S.node("span", "switch-thumb");
     thumb.setAttribute("aria-hidden", "true");
     toggle.appendChild(thumb);
@@ -110,8 +110,9 @@
       toggle.className = "switch-toggle" + (toggle.value === "true" ? " is-active" : "");
       toggle.setAttribute("aria-checked", toggle.value);
       toggle.disabled = !next.canChangeControlInjection;
-      status.textContent = "Control Injection: " + value;
-      error.textContent = value === "ERROR" ? "CONTROL_CONFIG_UNAVAILABLE" : "";
+      status.textContent = value === "ON" ? "控制注入：已开启"
+        : value === "OFF" ? "控制注入：已关闭" : "控制注入：配置异常";
+      error.textContent = value === "ERROR" ? "控制注入配置不可用" : "";
       error.hidden = value !== "ERROR";
     }
     update(page, emit);
