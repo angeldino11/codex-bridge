@@ -40,6 +40,28 @@ public struct RestrictedProjectFileService: Sendable {
     return try makeReadResult(fileInfo: file, path: path, range: request.lineRange)
   }
 
+  public func readResource(
+    projectID: BridgeDomain.ProjectID,
+    relativePath: String,
+    maximumBytes: Int
+  ) async throws -> Data {
+    guard maximumBytes > 0 else {
+      throw ProjectFileError.responseLimitExceeded
+    }
+    let project = try await requireReadableProject(projectID)
+    let path = try SecureRelativePath(relativePath)
+    let policy = ProjectFilePolicy(forbiddenPatterns: project.forbiddenPatterns)
+    guard policy.allows(path) else { throw ProjectFileError.forbiddenPath }
+
+    let resolver = ProjectPathResolver(root: project.primaryRoot)
+    let effectiveMaximumBytes = min(maximumBytes, limits.maximumFileBytes)
+    let reader = SecureProjectFileWriter(maximumBytes: effectiveMaximumBytes)
+    guard let data = try reader.readContent(relativePath: path, through: resolver) else {
+      throw ProjectFileError.pathMissing
+    }
+    return data
+  }
+
   public func search(_ request: ProjectFileSearchRequest) async throws
     -> ProjectFileSearchResult
   {
@@ -459,8 +481,6 @@ private func normalizedLines(_ text: String) -> [String] {
   var lines = text.split(separator: "\n", omittingEmptySubsequences: false).map { line in
     line.last == "\r" ? String(line.dropLast()) : String(line)
   }
-  // A trailing newline is a terminator, not an extra empty logical line, so it
-  // must not trigger a spurious truncated/next_start_line page.
   if text.hasSuffix("\n"), lines.last == "" {
     lines.removeLast()
   }
