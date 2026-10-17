@@ -87,7 +87,7 @@ final class ControlInjectionTests: XCTestCase {
     XCTAssertTrue(MCPServiceToolDispatcher.isTargetSubmission(
       clientID: .chatGPT, providerID: nil))
     XCTAssertFalse(MCPServiceToolDispatcher.isTargetSubmission(
-      clientID: .gemini, providerID: "codex"))
+      clientID: .qwenStudio, providerID: "codex"))
     XCTAssertFalse(MCPServiceToolDispatcher.isTargetSubmission(
       clientID: .chatGPT, providerID: "qoder"))
   }
