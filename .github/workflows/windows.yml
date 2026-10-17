@@ -2,7 +2,7 @@ name: windows
 
 on:
   push:
-    branches: [win, 'codex/platform-*', 'feature/control-injection']
+    branches: [win, 'codex/platform-*']
   pull_request:
     branches: [win]
   workflow_dispatch:

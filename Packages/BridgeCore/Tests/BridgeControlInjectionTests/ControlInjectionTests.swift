@@ -100,8 +100,10 @@ final class ControlInjectionTests: XCTestCase {
     let encoder = MCPToolResultEncoder()
     let original = try encoder.encode(output, isError: true)
     let injected = try encoder.encode(output, isError: true, controlText: "latest")
-    let encodedOriginal = try JSONEncoder().encode(original.structuredContent)
-    let encodedInjected = try JSONEncoder().encode(injected.structuredContent)
+    let comparisonEncoder = JSONEncoder()
+    comparisonEncoder.outputFormatting = [.sortedKeys]
+    let encodedOriginal = try comparisonEncoder.encode(original.structuredContent)
+    let encodedInjected = try comparisonEncoder.encode(injected.structuredContent)
     XCTAssertEqual(encodedInjected, encodedOriginal)
     let visible = String(data: try JSONEncoder().encode(injected), encoding: .utf8) ?? ""
     XCTAssertTrue(visible.contains("<CTRL>"))
