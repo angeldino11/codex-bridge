@@ -17,8 +17,15 @@ public struct MCPToolResultEncoder: Sendable {
 
   public func encode<Output: Encodable & Sendable>(
     _ output: Output,
+    isError: Bool = false
+  ) throws -> CallTool.Result {
+    try encode(output, isError: isError, controlText: nil)
+  }
+
+  package func encode<Output: Encodable & Sendable>(
+    _ output: Output,
     isError: Bool = false,
-    controlText: String? = nil
+    controlText: String?
   ) throws -> CallTool.Result {
     let encoder = Self.makeJSONEncoder()
     let data = try encoder.encode(output)
