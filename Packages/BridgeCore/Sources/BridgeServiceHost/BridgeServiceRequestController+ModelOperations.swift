@@ -182,10 +182,9 @@ extension BridgeServiceRequestController {
   }
 
   func handleGetControlInjectionStatus(_ request: BridgeServiceIPCRequest) async throws -> Data {
-    let injector = ControlInjector(
-      dataRootURL: composition.paths.rootURL, settings: composition.settings
-    )
-    let status = await injector.currentStatus()
+    let injector = ControlInjector(dataRootURL: composition.paths.rootURL)
+    let enabled = try await composition.settings.isControlInjectionEnabled()
+    let status = enabled ? await injector.currentStatus() : "OFF"
     return try BridgeServiceIPCCodec.success(
       requestID: request.requestID,
       payload: IPCControlInjectionStatus(status: status)

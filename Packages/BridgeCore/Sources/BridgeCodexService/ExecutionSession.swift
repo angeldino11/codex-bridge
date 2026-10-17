@@ -28,6 +28,7 @@ package actor ExecutionSession {
   let projectRoot: String
   let approvalLimits: ExecutionApprovalLimits
   let controlInjector: ControlInjector?
+  let settings: ServiceSettings
   var controlApplies = false
   let onTermination: @Sendable (TaskID, ExecutionSession) async -> Void
   let continuation: AsyncStream<ExecutionEvent>.Continuation
@@ -55,6 +56,7 @@ package actor ExecutionSession {
     projectRoot: String,
     approvalLimits: ExecutionApprovalLimits,
     controlInjector: ControlInjector?,
+    settings: ServiceSettings,
     onTermination: @escaping @Sendable (TaskID, ExecutionSession) async -> Void
   ) {
     let pair = AsyncStream.makeStream(
@@ -66,6 +68,7 @@ package actor ExecutionSession {
     self.projectRoot = projectRoot
     self.approvalLimits = approvalLimits
     self.controlInjector = controlInjector
+    self.settings = settings
     self.onTermination = onTermination
     client = CodexAppServerClient(
       configuration: configuration.appServer.current(),
@@ -110,7 +113,9 @@ package actor ExecutionSession {
       let threadID = try await prepareThread(request, posture: posture)
       expectedThreadID = threadID
       var providerPrompt = request.task.prompt
-      if controlApplies, let control = try await controlInjector?.currentControl() {
+      if controlApplies, try await settings.isControlInjectionEnabled() {
+        guard let controlInjector else { throw ControlConfigUnavailable() }
+        let control = try await controlInjector.currentControl()
         providerPrompt = try ControlInjector.taskMessage(
           request.task.prompt, skills: request.task.selectedSkills, control: control
         )
@@ -163,7 +168,9 @@ package actor ExecutionSession {
     let binding = try activeBinding(expectedTurnID: expectedTurnID)
     let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
     var prompt = trimmed
-    if controlApplies, let control = try await controlInjector?.currentControl() {
+    if controlApplies, try await settings.isControlInjectionEnabled() {
+      guard let controlInjector else { throw ControlConfigUnavailable() }
+      let control = try await controlInjector.currentControl()
       prompt = ControlInjector.wrap(text, control: control)
     }
     guard !trimmed.isEmpty, prompt.utf8.count <= 64 * 1_024, !prompt.contains("\0") else {

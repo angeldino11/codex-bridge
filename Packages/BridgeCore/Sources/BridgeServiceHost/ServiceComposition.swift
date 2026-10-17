@@ -230,14 +230,15 @@ public actor ServiceComposition {
     executionAppServer.update(configuredPath: codexExecutablePath)
     let catalogAppServer = Self.makeAppServerLocator(configuration.catalogAppServer)
     catalogAppServer.update(configuredPath: codexExecutablePath)
-    let controlInjector = ControlInjector(dataRootURL: paths.rootURL, settings: settings)
+    let controlInjector = ControlInjector(dataRootURL: paths.rootURL)
     let execution = ExecutionManager(
       configuration: ExecutionManagerConfiguration(
         appServer: executionAppServer,
         clientInfo: configuration.clientInfo,
         synchronizeCodexProjects: configuration.synchronizeCodexProjects
       ),
-      controlInjector: controlInjector
+      controlInjector: controlInjector,
+      settings: settings
     )
     let coordinator = ServiceExecutionCoordinator(
       tasks: tasks,
@@ -449,7 +450,8 @@ public actor ServiceComposition {
         ),
         clientAdmission: mcpClients.admission,
         currentControl: { [paths, settings] in
-          try await ControlInjector(dataRootURL: paths.rootURL, settings: settings).currentControl()
+          guard try await settings.isControlInjectionEnabled() else { return nil }
+          return try await ControlInjector(dataRootURL: paths.rootURL).currentControl()
         }
       )
       server = activeServer

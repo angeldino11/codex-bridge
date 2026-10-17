@@ -5,11 +5,17 @@ import Foundation
 public actor ExecutionManager {
   private let configuration: ExecutionManagerConfiguration
   private let controlInjector: ControlInjector?
+  private let settings: ServiceSettings
   private var sessions: [TaskID: ExecutionSession] = [:]
 
-  public init(configuration: ExecutionManagerConfiguration, controlInjector: ControlInjector? = nil) {
+  public init(
+    configuration: ExecutionManagerConfiguration,
+    controlInjector: ControlInjector? = nil,
+    settings: ServiceSettings
+  ) {
     self.configuration = configuration
     self.controlInjector = controlInjector
+    self.settings = settings
   }
 
   public func start(_ request: ExecutionRequest) async throws -> ExecutionHandle {
@@ -27,6 +33,7 @@ public actor ExecutionManager {
       projectRoot: request.project.root.canonicalPath,
       approvalLimits: ExecutionApprovalLimits(request: request),
       controlInjector: controlInjector,
+      settings: settings,
       onTermination: { [weak self] taskID, session in
         await self?.remove(taskID: taskID, matching: session)
       }

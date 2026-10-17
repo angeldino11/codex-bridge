@@ -5,21 +5,17 @@ import Foundation
 /// Reads the current file only while preparing a model-visible package.
 public struct ControlInjector: Sendable {
   public let fileURL: URL
-  private let settings: ServiceSettings
 
-  public init(dataRootURL: URL, settings: ServiceSettings) {
+  public init(dataRootURL: URL) {
     fileURL = dataRootURL.appending(path: "control.json")
-    self.settings = settings
   }
 
-  public func currentControl() async throws -> String? {
-    guard try await settings.isControlInjectionEnabled() else { return nil }
+  public func currentControl() async throws -> String {
     return try readRawFile()
   }
 
   public func currentStatus() async -> String {
     do {
-      guard try await settings.isControlInjectionEnabled() else { return "OFF" }
       _ = try readRawFile()
       return "ON"
     } catch {
