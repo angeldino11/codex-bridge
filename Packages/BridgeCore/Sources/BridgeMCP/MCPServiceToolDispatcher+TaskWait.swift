@@ -24,6 +24,11 @@ extension MCPServiceToolDispatcher {
     let control = try await taskControl(
       providerID: result.task.providerID, sourceClientID: result.task.sourceClientID
     )
-    return try resultEncoder.encode(result, controlText: control)
+    let links = try await taskFileResourceLinks(for: result.task)
+    return try resultEncoder.encode(
+      result,
+      controlText: control,
+      resourceLinks: links
+    )
   }
 }
