@@ -70,7 +70,12 @@ extension MCPServiceToolDispatcher {
     let control = try await taskControl(
       providerID: snapshot.providerID, sourceClientID: snapshot.sourceClientID
     )
-    return try resultEncoder.encode(ServiceGetTaskOutput(task: snapshot), controlText: control)
+    let links = try await taskFileResourceLinks(for: snapshot)
+    return try resultEncoder.encode(
+      ServiceGetTaskOutput(task: snapshot),
+      controlText: control,
+      resourceLinks: links
+    )
 
   }
 
