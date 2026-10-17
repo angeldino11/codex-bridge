@@ -2,7 +2,7 @@
 import Foundation
 import XCTest
 
-final class ReturnControlContentTests: XCTestCase {
+extension ControlInjectionTests {
   func testControlUsesDedicatedFirstTextBlockAndKeepsStructuredContent() throws {
     let output = MCPToolErrorOutput(error: .init(
       code: "TASK_FAILED", category: .infrastructureFailure,
