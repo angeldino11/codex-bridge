@@ -55,7 +55,16 @@ public actor MCPBridgeServer {
       service: service,
       exposureMode: exposureMode
     )
-    makeServer = { _ in await factory.makeServer() }
+    makeServer = { clientID in
+      let server = await factory.makeServer()
+      let dispatcher = MCPServiceToolDispatcher(
+        service: service,
+        exposureMode: exposureMode,
+        clientID: clientID
+      )
+      await server.enableTaskFileResources(dispatcher: dispatcher)
+      return server
+    }
     discoveryInstructions = { clientID in
       let deadline = ContinuousClock().now.advanced(by: .seconds(5))
       let custom = try? await service.serviceCustomInstructions(deadline: deadline)
@@ -81,13 +90,22 @@ public actor MCPBridgeServer {
     precondition(!appVersion.isEmpty)
     makeServer = { clientID in
       let mode = await exposureMode(clientID)
-      return await MCPServiceServerFactory(
+      let control = clientID == .chatGPT ? currentControl : nil
+      let server = await MCPServiceServerFactory(
         appVersion: appVersion,
         service: service,
         exposureMode: mode,
         clientID: clientID,
-        currentControl: clientID == .chatGPT ? currentControl : nil
+        currentControl: control
       ).makeServer()
+      let dispatcher = MCPServiceToolDispatcher(
+        service: service,
+        exposureMode: mode,
+        clientID: clientID,
+        currentControl: control
+      )
+      await server.enableTaskFileResources(dispatcher: dispatcher)
+      return server
     }
     discoveryInstructions = { clientID in
       let deadline = ContinuousClock().now.advanced(by: .seconds(5))
