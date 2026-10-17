@@ -1,5 +1,13 @@
 import Foundation
 
+public struct MCPProjectFileResourceContent: Sendable {
+  public let data: Data
+
+  public init(data: Data) {
+    self.data = data
+  }
+}
+
 public enum MCPServiceExposureMode: String, Codable, Equatable, Sendable {
   case readOnly = "read-only"
   case full
@@ -49,6 +57,13 @@ public protocol BridgeMCPServiceAPI: Sendable {
     lineCount: Int,
     deadline: ContinuousClock.Instant
   ) async throws -> MCPProjectFileReadPage
+
+  func serviceReadProjectFileResource(
+    projectID: String,
+    relativePath: String,
+    maximumBytes: Int,
+    deadline: ContinuousClock.Instant
+  ) async throws -> MCPProjectFileResourceContent
 
   func serviceListProjectDirectory(
     projectID: String,
@@ -247,6 +262,15 @@ public protocol BridgeMCPServiceAPI: Sendable {
 }
 
 extension BridgeMCPServiceAPI {
+  public func serviceReadProjectFileResource(
+    projectID: String,
+    relativePath: String,
+    maximumBytes: Int,
+    deadline: ContinuousClock.Instant
+  ) async throws -> MCPProjectFileResourceContent {
+    throw BridgeMCPQueryError.unavailable
+  }
+
   public func serviceWaitTask(
     taskID: String,
     timeoutSeconds: Int,
