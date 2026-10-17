@@ -5,6 +5,27 @@ import BridgeSecurity
 import Foundation
 
 extension BridgeServiceApplication {
+  public func serviceReadProjectFileResource(
+    projectID: String,
+    relativePath: String,
+    maximumBytes: Int,
+    deadline: ContinuousClock.Instant
+  ) async throws -> MCPProjectFileResourceContent {
+    try Self.checkDeadline(deadline)
+    do {
+      let data = try await files.readResource(
+        projectID: ProjectID(rawValue: projectID),
+        relativePath: relativePath,
+        maximumBytes: maximumBytes
+      )
+      return MCPProjectFileResourceContent(data: data)
+    } catch is CancellationError {
+      throw CancellationError()
+    } catch {
+      throw Self.publicFileError(error)
+    }
+  }
+
   public func serviceSearchProjectFiles(
     projectID: String,
     query: String,
