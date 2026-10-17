@@ -31,14 +31,23 @@ public struct MCPToolResultEncoder: Sendable {
     let data = try encoder.encode(output)
     let structured = try JSONDecoder().decode(Value.self, from: data)
     let text = String(decoding: data, as: UTF8.self)
-    let visibleText = controlText.map {
-      "<CTRL>\n\($0)\n</CTRL>\n\n<MSG>\n\(text)\n</MSG>"
-    } ?? text
-    let result = CallTool.Result(
-      content: [.text(text: visibleText, annotations: nil, _meta: nil)],
-      structuredContent: Optional.some(structured),
-      isError: isError
-    )
+    let result: CallTool.Result
+    if let controlText {
+      result = CallTool.Result(
+        content: [
+          .text(text: "<CTRL>\n\(controlText)\n</CTRL>", annotations: nil, _meta: nil),
+          .text(text: text, annotations: nil, _meta: nil),
+        ],
+        structuredContent: Optional.some(structured),
+        isError: isError
+      )
+    } else {
+      result = CallTool.Result(
+        content: [.text(text: text, annotations: nil, _meta: nil)],
+        structuredContent: Optional.some(structured),
+        isError: isError
+      )
+    }
     guard try encoder.encode(result).count <= maximumBytes else {
       throw MCPToolResultEncodingError.resultTooLarge(maximumBytes: maximumBytes)
     }
