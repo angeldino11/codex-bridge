@@ -122,9 +122,13 @@ public actor ServiceExecutionCoordinator {
       _ = try? await tasks.fail(
         taskID: taskID,
         failureCode: conversationPersisted
-          ? "execution_start_failed" : "conversation_persistence_failed",
+          ? (error is ControlConfigUnavailable
+            ? "CONTROL_CONFIG_UNAVAILABLE" : "execution_start_failed")
+          : "conversation_persistence_failed",
         summary: conversationPersisted
-          ? ExecutionStartFailurePresentation.summary(error, provider: "Codex")
+          ? (error is ControlConfigUnavailable
+            ? "CONTROL_CONFIG_UNAVAILABLE"
+            : ExecutionStartFailurePresentation.summary(error, provider: "Codex"))
           : "The task conversation could not be persisted."
       )
       throw error

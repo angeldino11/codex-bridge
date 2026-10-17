@@ -3,6 +3,13 @@ import BridgeMCP
 import BridgeServiceAppCore
 
 extension BridgeServiceAppModel {
+  func setControlInjectionEnabled(_ enabled: Bool) {
+    runMutation { [weak self] client in
+      try await client.setControlInjectionEnabled(enabled)
+      self?.controlInjectionStatus = try await client.controlInjectionStatus().status
+    }
+  }
+
   func setTaskStartApprovalMode(_ mode: String) {
     guard mode == "require" || mode == "auto" else { return }
     runMutation { [weak self] client in

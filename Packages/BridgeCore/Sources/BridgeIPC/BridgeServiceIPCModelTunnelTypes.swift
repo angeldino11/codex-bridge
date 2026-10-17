@@ -108,6 +108,18 @@ public struct IPCDirectApprovalModeResponse: Codable, Equatable, Sendable {
   }
 }
 
+public struct IPCControlInjectionStatus: Codable, Equatable, Sendable {
+  public let status: String
+
+  public init(status: String) { self.status = status }
+}
+
+public struct IPCControlInjectionSetting: Codable, Equatable, Sendable {
+  public let enabled: Bool
+
+  public init(enabled: Bool) { self.enabled = enabled }
+}
+
 public struct IPCTaskStartApprovalModeRequest: Codable, Equatable, Sendable {
   public let mode: String
 

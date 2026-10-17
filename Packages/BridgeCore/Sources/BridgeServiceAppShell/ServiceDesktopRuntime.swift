@@ -121,6 +121,7 @@ extension BridgeServiceAppModel {
       tasks = []
       approvals = []
       taskStartApprovalMode = "require"
+      controlInjectionStatus = "ERROR"
       workbenchPermissionMode = "full"
       confirmedWorkbenchPermissionMode = "full"
       resolvingApprovalKeys = []

@@ -87,13 +87,17 @@ extension BridgeServiceApplication {
         text: input,
         interruptCurrentPrompt: mode == .interruptCurrentThenContinue
       )
+    } catch is ControlConfigUnavailable {
+      throw ControlConfigUnavailable()
     } catch {
       throw Self.publicExecutionError(error)
     }
     return MCPServiceTaskMutationReceipt(
       taskID: taskID,
       status: task.state.status.rawValue,
-      accepted: true
+      accepted: true,
+      taskProviderID: task.providerID,
+      taskSourceClientID: task.sourceClientID
     )
   }
 

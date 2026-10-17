@@ -182,6 +182,10 @@ public final class BridgeServiceRequestController: @unchecked Sendable {
       return try await handleGetDirectApprovalMode(request)
     case .setDirectApprovalMode:
       return try await handleSetDirectApprovalMode(request)
+    case .getControlInjectionStatus:
+      return try await handleGetControlInjectionStatus(request)
+    case .setControlInjectionEnabled:
+      return try await handleSetControlInjectionEnabled(request)
     case .getTaskStartApprovalMode:
       return try await handleGetTaskStartApprovalMode(request)
     case .setTaskStartApprovalMode:

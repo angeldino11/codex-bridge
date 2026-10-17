@@ -181,6 +181,25 @@ extension BridgeServiceRequestController {
     return try BridgeServiceIPCCodec.emptySuccess(requestID: request.requestID)
   }
 
+  func handleGetControlInjectionStatus(_ request: BridgeServiceIPCRequest) async throws -> Data {
+    let injector = ControlInjector(
+      dataRootURL: composition.paths.rootURL, settings: composition.settings
+    )
+    let status = await injector.currentStatus()
+    return try BridgeServiceIPCCodec.success(
+      requestID: request.requestID,
+      payload: IPCControlInjectionStatus(status: status)
+    )
+  }
+
+  func handleSetControlInjectionEnabled(_ request: BridgeServiceIPCRequest) async throws -> Data {
+    let payload = try BridgeServiceIPCCodec.payload(
+      IPCControlInjectionSetting.self, from: request
+    )
+    try await composition.settings.setControlInjectionEnabled(payload.enabled)
+    return try BridgeServiceIPCCodec.emptySuccess(requestID: request.requestID)
+  }
+
   func handleGetTaskStartApprovalMode(_ request: BridgeServiceIPCRequest) async throws -> Data {
     let mode = try await composition.application.serviceTaskStartApprovalMode(
       deadline: Self.deadline()

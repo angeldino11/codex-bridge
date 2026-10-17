@@ -17,14 +17,18 @@ public struct MCPToolResultEncoder: Sendable {
 
   public func encode<Output: Encodable & Sendable>(
     _ output: Output,
-    isError: Bool = false
+    isError: Bool = false,
+    controlText: String? = nil
   ) throws -> CallTool.Result {
     let encoder = Self.makeJSONEncoder()
     let data = try encoder.encode(output)
     let structured = try JSONDecoder().decode(Value.self, from: data)
     let text = String(decoding: data, as: UTF8.self)
+    let visibleText = controlText.map {
+      "<CTRL>\n\($0)\n</CTRL>\n\n<MSG>\n\(text)\n</MSG>"
+    } ?? text
     let result = CallTool.Result(
-      content: [.text(text: text, annotations: nil, _meta: nil)],
+      content: [.text(text: visibleText, annotations: nil, _meta: nil)],
       structuredContent: Optional.some(structured),
       isError: isError
     )

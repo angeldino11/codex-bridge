@@ -12,6 +12,8 @@
     var navigation = global.CodexBridgeDesktopSettingsNavigation.create(content, page, emit);
     var approvalEditor = approvalCard(page, emit);
     navigation.execution.appendChild(approvalEditor.root);
+    var controlEditor = controlCard(page, emit);
+    navigation.application.appendChild(controlEditor.root);
     var serviceEditor = serviceCard(page, emit);
     navigation.application.appendChild(serviceEditor.root);
     var appUpdate = global.CodexBridgeDesktopAppUpdate
@@ -33,6 +35,7 @@
         if (!next) { status.hidden = true; return; }
         navigation.update(next, nextEmit);
         approvalEditor.update(next, nextEmit);
+        controlEditor.update(next, nextEmit);
         serviceEditor.update(next, nextEmit);
         status.textContent = next.statusMessage || "";
         status.hidden = !next.statusMessage;
@@ -73,6 +76,43 @@
       draft.update({ direct: next.directApprovalMode || "", task: next.taskStartApprovalMode || "" });
       direct.control.disabled = !next.canSaveApprovalModes;
       task.control.disabled = !next.canSaveApprovalModes;
+    }
+    update(page, emit);
+    return { root: card, update: update };
+  }
+
+  function controlCard(page, emit) {
+    var context = { emit: emit };
+    var card = S.node("section", "settings-subsection");
+    card.appendChild(S.node("h3", null, "Control Injection"));
+    var row = S.node("div", "check-field");
+    var toggle = S.node("button", "switch-toggle");
+    toggle.type = "button";
+    toggle.setAttribute("role", "switch");
+    toggle.setAttribute("aria-label", "Control Injection");
+    var thumb = S.node("span", "switch-thumb");
+    thumb.setAttribute("aria-hidden", "true");
+    toggle.appendChild(thumb);
+    row.appendChild(toggle);
+    var status = S.node("span");
+    row.appendChild(status);
+    card.appendChild(row);
+    var error = S.node("p", "hint");
+    card.appendChild(error);
+    toggle.addEventListener("click", function () {
+      context.emit("setControlInjectionEnabled", { enabled: toggle.value !== "true" });
+    });
+    function update(next, nextEmit) {
+      context.emit = nextEmit;
+      var value = next.controlInjectionStatus === "ON" || next.controlInjectionStatus === "OFF"
+        ? next.controlInjectionStatus : "ERROR";
+      toggle.value = value === "OFF" ? "false" : "true";
+      toggle.className = "switch-toggle" + (toggle.value === "true" ? " is-active" : "");
+      toggle.setAttribute("aria-checked", toggle.value);
+      toggle.disabled = !next.canChangeControlInjection;
+      status.textContent = "Control Injection: " + value;
+      error.textContent = value === "ERROR" ? "CONTROL_CONFIG_UNAVAILABLE" : "";
+      error.hidden = value !== "ERROR";
     }
     update(page, emit);
     return { root: card, update: update };

@@ -16,6 +16,7 @@ public enum ServiceTaskStartApprovalMode: String, Codable, CaseIterable, Sendabl
 }
 
 public enum ServiceSettingKey: String, CaseIterable, Sendable {
+  case controlInjectionEnabled = "control_injection_enabled"
   case customInstructions = "mcp.custom_instructions"
   case mcpExposureMode = "mcp.exposure_mode"
   case mcpLocalPort = "mcp.local_port"
@@ -300,6 +301,16 @@ public actor ServiceSettings {
       throw ServiceStoreError.corruptRecord
     }
     return enabled
+  }
+
+  public func isControlInjectionEnabled() async throws -> Bool {
+    guard let value = try await string(for: .controlInjectionEnabled) else { return true }
+    guard let enabled = Bool(value) else { throw ServiceStoreError.corruptRecord }
+    return enabled
+  }
+
+  public func setControlInjectionEnabled(_ enabled: Bool) async throws {
+    try await set(String(enabled), for: .controlInjectionEnabled)
   }
 
   public func string(for key: ServiceSettingKey) async throws -> String? {

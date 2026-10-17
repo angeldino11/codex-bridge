@@ -113,7 +113,7 @@ enum BridgeDesktopCommandRouter {
       handleNativePermissions(envelope, model: model)
     case .saveAgentDefault, .setExecutionModel, .setExecutionEffort, .setAccessMode,
       .setFastMode,
-      .setDirectApprovalMode, .setTaskStartApprovalMode, .saveSettings,
+      .setDirectApprovalMode, .setTaskStartApprovalMode, .setControlInjectionEnabled, .saveSettings,
       .saveCustomInstructions, .registerService, .unregisterService,
       .setKeepServiceRunning, .updateBrowserViewport:
       handleSettings(envelope, model: model)

@@ -21,6 +21,9 @@ extension MCPServiceToolDispatcher {
       )
     }
     try validate(result.task, requestedTaskID: taskID, eventLimit: eventLimit)
-    return try resultEncoder.encode(result)
+    let control = try await taskControl(
+      providerID: result.task.providerID, sourceClientID: result.task.sourceClientID
+    )
+    return try resultEncoder.encode(result, controlText: control)
   }
 }

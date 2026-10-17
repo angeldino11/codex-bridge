@@ -67,7 +67,10 @@ extension MCPServiceToolDispatcher {
       )
     }
     try validate(snapshot, requestedTaskID: taskID, eventLimit: eventLimit)
-    return try resultEncoder.encode(ServiceGetTaskOutput(task: snapshot))
+    let control = try await taskControl(
+      providerID: snapshot.providerID, sourceClientID: snapshot.sourceClientID
+    )
+    return try resultEncoder.encode(ServiceGetTaskOutput(task: snapshot), controlText: control)
 
   }
 
@@ -115,7 +118,8 @@ extension MCPServiceToolDispatcher {
         deadline: deadline
       )
     }
-    return try resultEncoder.encode(ServiceSubmitTaskOutput(receipt: receipt))
+    let control = try await submissionControl(providerID: submission.providerID)
+    return try resultEncoder.encode(ServiceSubmitTaskOutput(receipt: receipt), controlText: control)
 
   }
 
@@ -151,7 +155,10 @@ extension MCPServiceToolDispatcher {
         deadline: deadline
       )
     }
-    return try resultEncoder.encode(ServiceMutateTaskOutput(receipt: receipt))
+    let control = try await taskControl(
+      providerID: receipt.taskProviderID, sourceClientID: receipt.taskSourceClientID
+    )
+    return try resultEncoder.encode(ServiceMutateTaskOutput(receipt: receipt), controlText: control)
 
   }
 

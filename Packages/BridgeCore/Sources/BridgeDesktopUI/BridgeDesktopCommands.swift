@@ -112,6 +112,7 @@ public enum BridgeDesktopCommand: String, Codable, Sendable {
   case setFastMode
   case setDirectApprovalMode
   case setTaskStartApprovalMode
+  case setControlInjectionEnabled
   case saveSettings
   case saveDirectConfiguration
   case checkDirectCommand

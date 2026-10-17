@@ -202,6 +202,8 @@ public struct BridgeDesktopSettingsState: Codable, Equatable, Sendable {
   public let taskStartApprovalMode: String
   public let taskStartApprovalOptions: [BridgeDesktopChoice]
   public let customInstructions: String
+  public let controlInjectionStatus: String
+  public let canChangeControlInjection: Bool
   public let agentDefaults: [BridgeDesktopAgentDefaultState]
   public let nativePermissionPolicy: BridgeDesktopNativePermissionState?
   public let keepServiceRunningAfterExit: Bool
@@ -238,6 +240,8 @@ public struct BridgeDesktopSettingsState: Codable, Equatable, Sendable {
     taskStartApprovalMode: String = "require",
     taskStartApprovalOptions: [BridgeDesktopChoice] = [],
     customInstructions: String = "",
+    controlInjectionStatus: String = "ERROR",
+    canChangeControlInjection: Bool = false,
     agentDefaults: [BridgeDesktopAgentDefaultState] = [],
     nativePermissionPolicy: BridgeDesktopNativePermissionState? = nil,
     keepServiceRunningAfterExit: Bool = true,
@@ -273,6 +277,8 @@ public struct BridgeDesktopSettingsState: Codable, Equatable, Sendable {
     self.taskStartApprovalMode = taskStartApprovalMode
     self.taskStartApprovalOptions = taskStartApprovalOptions
     self.customInstructions = customInstructions
+    self.controlInjectionStatus = controlInjectionStatus
+    self.canChangeControlInjection = canChangeControlInjection
     self.agentDefaults = agentDefaults
     self.nativePermissionPolicy = nativePermissionPolicy
     self.keepServiceRunningAfterExit = keepServiceRunningAfterExit

@@ -52,6 +52,8 @@ public enum BridgeServiceIPCOperation: String, Codable, CaseIterable, Sendable {
   case denyDirectApproval = "deny_direct_approval"
   case getDirectApprovalMode = "get_direct_approval_mode"
   case setDirectApprovalMode = "set_direct_approval_mode"
+  case getControlInjectionStatus = "get_control_injection_status"
+  case setControlInjectionEnabled = "set_control_injection_enabled"
   case getTaskStartApprovalMode = "get_task_start_approval_mode"
   case setTaskStartApprovalMode = "set_task_start_approval_mode"
   case setExposureMode = "set_exposure_mode"

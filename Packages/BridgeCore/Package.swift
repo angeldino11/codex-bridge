@@ -398,6 +398,10 @@ let package = Package(
       name: "CodexBridgeServiceExecutable",
       dependencies: ["BridgeServiceHost"]
     ),
+    .testTarget(
+      name: "BridgeControlInjectionTests",
+      dependencies: ["BridgeAgentCore", "BridgeDomain", "BridgeMCP", "BridgeServiceCore"]
+    ),
     .executableTarget(
       name: "CodexBridgeWindowsApp",
       dependencies: [
